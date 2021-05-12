@@ -50,7 +50,7 @@ defmodule LifeTools.MixProject do
       {:quantum, "~> 3.0"},
       {:hackney, "~> 1.17.0"},
       {:tesla, "~> 1.4.0"},
-      {:timex, "~> 3.0"}
+      {:tzdata, "~> 1.1"}
     ]
   end
 

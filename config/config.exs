@@ -18,7 +18,6 @@ config :life_tools, LifeToolsWeb.Endpoint,
   pubsub_server: LifeTools.PubSub,
   live_view: [signing_salt: "2iYPIKvv"]
 
-
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
@@ -29,14 +28,21 @@ config :phoenix, :json_library, Jason
 
 config :tesla, adapter: Tesla.Adapter.Hackney
 
-tmdb_api_key = System.get_env("TMDB_API_KEY") ||
-  raise """
-  environment variable IMDB_API_KEY is missing.
-  """
+tmdb_api_key = System.get_env("TMDB_API_KEY") || raise """
+      environment variable TMDB_API_KEY is missing.
+      """
 
 config :life_tools,
-   tmdb_api_key: tmdb_api_key,
-   tmdb_base_url: "https://api.themoviedb.org/3"
+  tmdb_api_key: tmdb_api_key,
+  tmdb_base_url: "https://api.themoviedb.org/3"
+
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+
+config :life_tools, LifeTools.Scheduler,
+  timezone: "America/New_York",
+  jobs: [
+    {"0 2 * * *", {LifeTools.Scheduler, :daily_tasks, []}}
+  ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

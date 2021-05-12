@@ -2,8 +2,8 @@
 <div id="shows">
     <div class="wrapper">
         <h2>Recent Episodes</h2>
-        <%= render_episode_table(@recent) %>
+        <%= render_episode_table(@recent, true) %>
         <h2>Upcoming Episodes</h2>
-        <%= render_episode_table(@upcoming) %>
+        <%= render_episode_table(@upcoming, false) %>
     </div>
 </div>

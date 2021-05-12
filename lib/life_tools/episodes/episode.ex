@@ -14,7 +14,7 @@ defmodule LifeTools.Episodes.Episode do
   @doc false
   def changeset(episode, attrs) do
     episode
-    |> cast(attrs, [:title, :air_date])
-    |> validate_required([:title, :air_date])
+    |> cast(attrs, [:id, :title, :air_date, :show_id, :acknowledged])
+    |> validate_required([:id, :title, :air_date, :show_id])
   end
 end

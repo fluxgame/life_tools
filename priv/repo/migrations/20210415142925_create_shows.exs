@@ -9,6 +9,5 @@ defmodule LifeTools.Repo.Migrations.CreateShows do
 
       timestamps()
     end
-
   end
 end

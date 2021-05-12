@@ -14,9 +14,10 @@ defmodule LifeTools.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: LifeTools.PubSub},
       # Start the Endpoint (http/https)
-      LifeToolsWeb.Endpoint
+      LifeToolsWeb.Endpoint,
       # Start a worker by calling: LifeTools.Worker.start_link(arg)
       # {LifeTools.Worker, arg}
+      LifeTools.Scheduler
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

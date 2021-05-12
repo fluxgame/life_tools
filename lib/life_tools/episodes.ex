@@ -7,7 +7,6 @@ defmodule LifeTools.Episodes do
   alias LifeTools.Repo
 
   alias LifeTools.Episodes.Episode
-  alias LifeTools.IMDB
 
   @doc """
   Returns the list of episodes.
@@ -24,19 +23,24 @@ defmodule LifeTools.Episodes do
 
   def list_recent_episodes do
     unacknowledged_episodes()
-    |> where([e], e.air_date < from_now(0, "day"))
+    |> where([e], e.air_date < from_now(-1, "day"))
     |> Repo.all()
   end
 
   def list_upcoming_episodes do
     unacknowledged_episodes()
-    |> where([e], e.air_date >= from_now(0, "day"))
+    |> where([e], e.air_date >= from_now(-1, "day"))
     |> Repo.all()
+  end
+
+  def acknowledge_episode(id) do
+    Repo.get(Episode, id)
+    |> update_episode(%{acknowledged: true})
   end
 
   defp unacknowledged_episodes do
     from(e in Episode)
-    |> where([acknowledged: false])
+    |> where(acknowledged: false)
     |> order_by(asc: :air_date)
     |> preload(:show)
   end
@@ -62,7 +66,7 @@ defmodule LifeTools.Episodes do
   """
   def get_last_episode(show) do
     from(Episode)
-    |> where([show_id: ^show.id])
+    |> where(show_id: ^show.id)
     |> order_by(desc: :air_date)
     |> first()
     |> Repo.one()
@@ -84,6 +88,15 @@ defmodule LifeTools.Episodes do
     %Episode{}
     |> Episode.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def create_or_update_episode(attrs \\ %{}) do
+    if attrs do
+      case Repo.get(Episode, attrs.id) do
+        nil -> create_episode(attrs)
+        episode -> update_episode(episode, attrs)
+      end
+    end
   end
 
   @doc """
