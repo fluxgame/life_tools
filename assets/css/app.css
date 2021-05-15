@@ -6,10 +6,12 @@
 
 @import "tailwindcss/components";
 
-@import "./custom.css";
-
 @import "./phoenix.css";
 
 /*@import "./live_view.css";*/
 
 @import "tailwindcss/utilities";
+
+@import "../node_modules/flatpickr/dist/flatpickr.css";
+
+@import "./custom.css";

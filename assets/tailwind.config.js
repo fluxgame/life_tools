@@ -171,7 +171,10 @@ module.exports = {
     variants: {
         //backgroundColor: ["responsive", "hover", "focus", "active"]
     },
-    plugins: [],
+    plugins: [
+      require('@tailwindcss/forms')
+    ],
+    darkMode: 'media',
     purge: [
         '../lib/**/*.ex',
         '../lib/**/*.leex',

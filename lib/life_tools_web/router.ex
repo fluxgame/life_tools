@@ -19,6 +19,7 @@ defmodule LifeToolsWeb.Router do
 
     live "/", PageLive, :index
     live "/shows", ShowsLive
+    live "/todo", TodoLive
   end
 
   # Other scopes may use custom stacks.

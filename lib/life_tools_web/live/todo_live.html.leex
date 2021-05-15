@@ -1,0 +1,188 @@
+<h1>Get. Things. Done.</h1>
+
+<div>
+  <button phx-click="edit-task" phx-value-id="new">Add Task</button>
+  <button phx-click="edit-project" phx-value-id="new">Add Project</button>
+  <form phx-change="set-context">
+    <select id="contexts" name="contexts" class="block w-full focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md">
+      <%= for context <- @contexts do %>
+      <option<%= if context == @current_context do %> selected<% end %>><%= context %></option>
+      <% end %>
+    </select>
+  </form>
+        <%= if !Enum.empty?(@today) do %>
+        <h2>Today</h2>
+          <ul>
+            <%= for task <- @today do %>
+              <li <%= if task.completion_date != nil do %> class="strikeout"<% end %>>
+                <form phx-change="mark-complete">
+                  <label>
+                    <input type="checkbox" 
+                           name="task_ids[]"
+                           value="<%= task.id %>"
+                           <%= if task.completion_date != nil do %> checked disabled="true"<% end %>/>&nbsp;
+                    <a href="#" phx-click="edit-task" phx-value-id="<%= task.id %>"><%= task.description %></a>&nbsp;
+                    (<%= task.project.name %>)
+                  </label>
+                </form>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+        <%= if !Enum.empty?(@next) do %>
+        <h2>Next</h2>
+        <form phx-submit="move-to-today">
+          <ul>
+            <%= for task <- @next do %>
+            <li>
+              <label>
+              <input type="checkbox" name="task_ids[]" value="<%= task.id %>"/>&nbsp;
+              <a href="#" phx-click="edit-task" phx-value-id="<%= task.id %>"><%= task.description %></a>
+               &nbsp;(<%= task.project.name %>)
+              </label>
+            </li>
+            <% end %>
+          </ul>
+          <input type="submit" value="Move to Today"/>
+        </form>
+      <% end %>
+        <%= if !Enum.empty?(@waiting) do %>
+        <h2>Waiting</h2>
+        <form phx-submit="mark-complete">
+          <ul>
+            <%= for task <- @waiting do %>
+              <li <%= if task.completion_date != nil do %> class="strikeout"<% end %>>
+                <label>
+              <input type="checkbox" 
+                     name="task_ids[]"
+                     value="<%= task.id %>"
+                     <%= if task.completion_date != nil do %> checked disabled="true"<% end %>/>&nbsp;
+              <a href="#" phx-click="edit-task" phx-value-id="<%= task.id %>"><%= task.description %></a>
+              &nbsp;(<%= task.project.name %>)
+                </label>
+            </li>
+            <% end %>
+          </ul>
+          <input type="submit" value="Mark Complete"/>
+        </form>
+        <% end %>
+</div>
+<%= if assigns[:project_changeset] do %>
+<div class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex h-screen justify-center items-center">
+    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" aria-hidden="true"></div>
+
+    <div class="inline-block self-center bg-white rounded-lg overflow-hidden shadow-xl transform text-left">
+      <div class="bg-white p-6">
+        <h2>
+          <%= if @project_changeset.data.id == nil do %>
+            New
+          <% else %>
+            Edit
+          <% end %>
+          Project
+        </h2>
+        <%= f = form_for @project_changeset, "#", phx_submit: "save-project" %>
+        <%= if @project_changeset.data.id != nil do %>
+          <input type="hidden" name="project_id" value="<%= @project_changeset.data.id %>"/>
+        <% end %>
+          <div class="field">
+            <%= label f, :name %>
+            <%= text_input f, :name, autocomplete: "off" %>
+            <%= error_tag f, :name%>
+          </div>
+          <div class="field">
+            <%= label f, :context%>
+            <%= text_input f, :context, autocomplete: "off" %>
+            <%= error_tag f, :context %>
+          </div>
+          <%= submit "Save", phx_disable_with: "Saving..." %>
+          <button type="button" class="cancel" phx-click="cancel-edit-project">Cancel</button>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>
+<%= if assigns[:task_changeset] do %>
+<div class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex h-screen justify-center items-center">
+    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" aria-hidden="true"></div>
+
+    <div class="inline-block self-center bg-white rounded-lg overflow-hidden shadow-xl transform text-left">
+      <div class="bg-white p-6">
+        <h2>
+          <%= if @task_changeset.data.id == nil do %>
+            New
+          <% else %>
+            Edit
+          <% end %>
+          Task
+        </h2>
+        <%= f = form_for @task_changeset, "#", phx_submit: "save-task" %>
+        <%= if @task_changeset.data.id != nil do %>
+          <input type="hidden" name="task_id" value="<%= @task_changeset.data.id %>"/>
+        <% end %>
+          <div class="grid grid-flow-cols grid-cols-2 gap-4">
+            <div>
+          <div class="field">
+            <%= label f, :description %>
+            <%= text_input f, :description, autocomplete: "off" %>
+            <%= error_tag f, :description %>
+          </div>
+          <div class="field">
+            <%= label f, :notes %>
+            <%= text_input f, :notes, autocomplete: "off" %>
+            <%= error_tag f, :notes %>
+          </div>
+          <div class="field">
+            <%= label f, :start_date, "Start Date" %>
+            <%= text_input f, :start_date, phx_hook: "DatePicker", autocomplete: "off" %>
+            <%= error_tag f, :start_date %>
+          </div>
+          <div class="field">
+            <%= label f, :due_date, "Due Date" %>
+            <%= text_input f, :due_date, phx_hook: "DatePicker", autocomplete: "off" %>
+            <%= error_tag f, :due_date %>
+          </div>
+          <div class="field">
+            <%= label f, :completion_date, "Date Completed" %>
+            <%= text_input f, :completion_date, phx_hook: "DatePicker", autocomplete: "off" %>
+            <%= error_tag f, :description %>
+          </div>
+            </div>
+            <div>
+          <div class="field text-right">
+            <label>
+              In Today &nbsp;
+              <%= checkbox f, :today %> 
+            </label>
+          </div>
+          <div class="field text-right">
+            <label>
+              Not My Responsibility &nbsp;
+              <%= checkbox f, :external %> 
+            </label>
+          </div>
+          <div class="field">
+            <%= label f, :project_id %>
+            <%= select f, :project_id, @projects, prompt: "Select project" %>
+          </div>
+          <%= if @task_changeset.data.id != nil do %>
+          <div class="field">
+            <%= label f, :depends, "Dependencies" %> 
+             <%= multiple_select f, :depends, @depend_options, size: 5,
+                   selected: Enum.map(@task_changeset.data.depends, &(&1.id)) %> 
+          </div>
+          <% end %>
+            </div>
+          </div>
+          <%= submit "Save", phx_disable_with: "Saving..." %>
+          <button type="button" class="cancel" phx-click="cancel-edit-task">Cancel</button>
+
+        </form>
+    </div>
+  </div>
+</div>
+<% end %>
