@@ -23,13 +23,13 @@ defmodule LifeTools.Episodes do
 
   def list_recent_episodes do
     unacknowledged_episodes()
-    |> where([e], e.air_date < from_now(-1, "day"))
+    |> where([e], e.air_date <= ^Date.utc_today())
     |> Repo.all()
   end
 
   def list_upcoming_episodes do
     unacknowledged_episodes()
-    |> where([e], e.air_date >= from_now(-1, "day"))
+    |> where([e], e.air_date > ^Date.utc_today())
     |> Repo.all()
   end
 

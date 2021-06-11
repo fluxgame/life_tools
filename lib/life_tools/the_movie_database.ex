@@ -7,7 +7,7 @@ defmodule LifeTools.TheMovieDatabase do
   plug Tesla.Middleware.BaseUrl, Application.fetch_env!(:life_tools, :tmdb_base_url)
   plug Tesla.Middleware.JSON
 
-  def add_show(show_id) do
+  def add_show(show_id, days_til_available \\ 1) do
     case fetch_show(show_id) do
       nil ->
         nil
@@ -17,24 +17,32 @@ defmodule LifeTools.TheMovieDatabase do
           Shows.create_show(%{
             id: response["id"],
             title: response["name"],
-            url: response["homepage"]
+            url: response["homepage"],
+            status: response["status"],
+            days_til_available: days_til_available
           })
 
         update_last_and_next(show, response)
     end
   end
 
-  def update_shows do
-    Enum.each(Shows.list_shows(), fn show -> update_show(show) end)
+  def update_shows(force \\ false) do
+    Enum.each(Shows.list_shows(), fn show ->
+      if show.status != "Ended", do: update_show(show, force)
+    end)
   end
 
-  def update_show(show) do
+  def update_show(show, force \\ false) do
     last_episode = Episodes.get_last_episode(show)
 
-    if !last_episode or before_today?(last_episode.air_date) do
+    if force or !last_episode or before_today?(last_episode.air_date) do
       case fetch_show(show.id) do
-        nil -> nil
-        response -> update_last_and_next(show, response)
+        nil ->
+          nil
+
+        response ->
+          Shows.update_show(show, %{title: response["name"], status: response["status"]})
+          update_last_and_next(show, response)
       end
     end
   end
@@ -49,18 +57,18 @@ defmodule LifeTools.TheMovieDatabase do
   defp before_today?(date), do: Date.compare(date, Date.utc_today()) == :lt
 
   defp update_last_and_next(show, response) do
-    Episodes.create_or_update_episode(gen_episode_attrs(show.id, response["last_episode_to_air"]))
-    Episodes.create_or_update_episode(gen_episode_attrs(show.id, response["next_episode_to_air"]))
+    Episodes.create_or_update_episode(gen_episode_attrs(show, response["last_episode_to_air"]))
+    Episodes.create_or_update_episode(gen_episode_attrs(show, response["next_episode_to_air"]))
   end
 
   defp gen_episode_attrs(_, nil), do: nil
 
-  defp gen_episode_attrs(show_id, episode) do
+  defp gen_episode_attrs(show, episode) do
     %{
       id: episode["id"],
       title: parse_title(episode),
-      air_date: parse_date(episode["air_date"]),
-      show_id: show_id
+      air_date: Date.add(parse_date(episode["air_date"]), show.days_til_available),
+      show_id: show.id
     }
   end
 

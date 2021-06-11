@@ -5,6 +5,8 @@ defmodule LifeTools.Shows.Show do
   schema "shows" do
     field :title, :string
     field :url, :string
+    field :status, :string
+    field :days_til_available, :integer
 
     timestamps()
   end
@@ -12,7 +14,7 @@ defmodule LifeTools.Shows.Show do
   @doc false
   def changeset(show, attrs) do
     show
-    |> cast(attrs, [:id, :title, :url])
-    |> validate_required([:id, :title])
+    |> cast(attrs, [:id, :title, :url, :status, :days_til_available])
+    |> validate_required([:id, :title, :status, :days_til_available])
   end
 end
