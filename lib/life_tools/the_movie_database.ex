@@ -41,7 +41,9 @@ defmodule LifeTools.TheMovieDatabase do
           nil
 
         response ->
-          show = Shows.update_show(show, %{title: response["name"], status: response["status"]})
+          {:ok, show} =
+            Shows.update_show(show, %{title: response["name"], status: response["status"]})
+
           update_last_and_next(show, response)
       end
     end
